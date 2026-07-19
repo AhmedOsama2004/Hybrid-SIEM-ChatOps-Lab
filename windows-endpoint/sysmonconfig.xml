@@ -1,0 +1,28 @@
+<Sysmon schemaversion="4.81">
+  <!-- 
+    NOTE: This is a tuned snippet of the Sysmon configuration.
+    It is specifically filtered to reduce noise and capture high-fidelity 
+    events for SOC analysis, such as PowerShell abuse and LSASS access.
+  -->
+  <HashAlgorithms>md5,sha256</HashAlgorithms>
+  <EventFiltering>
+    
+    <!-- Event ID 1: Process Creation (Catches PowerShell & Reverse Shells) -->
+    <RuleGroup name="SOC_Process_Tracking" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <Image condition="end with">powershell.exe</Image>
+        <Image condition="end with">cmd.exe</Image>
+        <Image condition="end with">nc.exe</Image>
+        <Image condition="end with">ncat.exe</Image>
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- Event ID 10: Process Access (Catches LSASS / Credential Dumping) -->
+    <RuleGroup name="SOC_Credential_Access" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <TargetImage condition="is">C:\Windows\system32\lsass.exe</TargetImage>
+      </ProcessAccess>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>
